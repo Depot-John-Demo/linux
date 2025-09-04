@@ -1,4 +1,4 @@
-name: Build Linux Kernel on Depot
+name: Build Linux Kernel on Depot-16 + cache
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ on:
       runs_on:
         description: 'Runner label (e.g., ubuntu-latest, depot-ubuntu-24.04-16, etc.)'
         required: false
-        default: 'depot-ubuntu-latest'
+        default: 'depot-ubuntu-latest-16'
         type: string
       config_type:
         description: 'Kernel configuration type'
@@ -21,7 +21,7 @@ on:
       make_jobs:
         description: 'Number of parallel build jobs'
         required: false
-        default: '2'
+        default: '16'
         type: string
 
 jobs:
@@ -29,9 +29,6 @@ jobs:
     runs-on: ${{ github.event.inputs.runs_on || 'ubuntu-latest' }}
     
     steps:
-    - name: Checkout kernel source
-      uses: actions/checkout@v4
-    
     - name: Restore build cache
       uses: actions/cache@v4
       with:
@@ -40,6 +37,10 @@ jobs:
         key: kernel-build-${{ github.event.inputs.config_type }}-${{ github.sha }}
         restore-keys: |
           kernel-build-${{ github.event.inputs.config_type }}-
+    - name: Checkout kernel source
+      uses: actions/checkout@v4
+    
+
     
     - name: Install dependencies
       run: |
