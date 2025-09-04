@@ -1,0 +1,84 @@
+name: Build Linux Kernel
+
+on:
+  workflow_dispatch:
+    inputs:
+      runs_on:
+        description: 'Runner label (e.g., ubuntu-latest, self-hosted, etc.)'
+        required: false
+        default: 'ubuntu-latest'
+        type: string
+      config_type:
+        description: 'Kernel configuration type'
+        required: false
+        default: 'defconfig'
+        type: choice
+        options:
+          - defconfig
+          - allmodconfig
+          - localmodconfig
+          - olddefconfig
+      make_jobs:
+        description: 'Number of parallel build jobs'
+        required: false
+        default: '4'
+        type: string
+
+jobs:
+  build:
+    runs-on: ${{ github.event.inputs.runs_on || 'ubuntu-latest' }}
+    
+    steps:
+    - name: Checkout kernel source
+      uses: actions/checkout@v4
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          bc \
+          kmod \
+          cpio \
+          flex \
+          bison \
+          libncurses5-dev \
+          libssl-dev \
+          libelf-dev \
+          liblz4-tool \
+          u-boot-tools \
+          gcc \
+          make \
+          perl \
+          python3 \
+          python3-dev
+    
+    - name: Configure kernel
+      run: |
+        if [ -f ".config" ]; then
+          echo "Using existing .config file"
+          make olddefconfig
+        else
+          echo "Creating config: ${{ github.event.inputs.config_type }}"
+          make ${{ github.event.inputs.config_type }}
+        fi
+    
+    - name: Display kernel version
+      run: |
+        echo "Kernel version: $(make kernelversion)"
+        echo "Build jobs: ${{ github.event.inputs.make_jobs }}"
+        echo "Runner: ${{ github.event.inputs.runs_on }}"
+    
+    - name: Build kernel
+      run: |
+        make -j${{ github.event.inputs.make_jobs }}
+    
+    - name: Build modules
+      run: |
+        make modules -j${{ github.event.inputs.make_jobs }}
+    
+    - name: Build complete
+      run: |
+        echo "✅ Kernel build completed successfully"
+        echo "Kernel version: $(make kernelversion)"
+        ls -lh arch/x86/boot/bzImage 2>/dev/null || ls -lh arch/x86_64/boot/bzImage 2>/dev/null || true
