@@ -1,4 +1,4 @@
-name: Build Linux Kernel
+name: Build Linux Kernel on Depot
 
 on:
   workflow_dispatch:
