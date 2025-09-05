@@ -1,4 +1,4 @@
-name: Build Linux Kernel on Depot-16 + cache
+name: Build Linux Kernel on Depot + cache
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ on:
       runs_on:
         description: 'Runner label (e.g., ubuntu-latest, depot-ubuntu-24.04-16, etc.)'
         required: false
-        default: 'depot-ubuntu-latest-16'
+        default: 'depot-ubuntu-latest'
         type: string
       config_type:
         description: 'Kernel configuration type'
@@ -21,7 +21,7 @@ on:
       make_jobs:
         description: 'Number of parallel build jobs'
         required: false
-        default: '16'
+        default: '2'
         type: string
 
 jobs:
